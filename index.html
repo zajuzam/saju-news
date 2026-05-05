@@ -121,6 +121,37 @@
     .slam-status-next   { display: inline-block; background: #6a3a9a; color: #fff; font-family: 'Roboto Condensed', sans-serif; font-size: 9px; padding: 2px 8px; letter-spacing: 1px; margin-bottom: 8px; }
     .slam-status-future { display: inline-block; background: #888;    color: #fff; font-family: 'Roboto Condensed', sans-serif; font-size: 9px; padding: 2px 8px; letter-spacing: 1px; margin-bottom: 8px; }
 
+    /* ─── EPL STANDINGS TABLE ─── */
+    .epl-table-wrap { background: #fff; border: 1px solid #ccc; margin-bottom: 22px; overflow-x: auto; }
+    .epl-table { width: 100%; border-collapse: collapse; font-family: 'Roboto Condensed', sans-serif; font-size: 13px; }
+    .epl-table thead tr { background: #1a4a8a; color: #fff; }
+    .epl-table thead th { padding: 9px 10px; text-align: center; font-weight: 700; letter-spacing: 1px; font-size: 10px; text-transform: uppercase; white-space: nowrap; }
+    .epl-table thead th:nth-child(2) { text-align: left; padding-left: 8px; }
+    .epl-table tbody tr { border-bottom: 1px solid #eee; transition: background 0.15s; }
+    .epl-table tbody tr:hover { background: #f0f4ff; }
+    .epl-table tbody td { padding: 7px 10px; text-align: center; color: #333; }
+    .epl-table tbody td:nth-child(1) { font-weight: 700; color: #666; width: 36px; }
+    .epl-table tbody td:nth-child(2) { text-align: left; }
+    .epl-zone-cl  { border-left: 4px solid #1a4a8a; }
+    .epl-zone-el  { border-left: 4px solid #e8870a; }
+    .epl-zone-ecl { border-left: 4px solid #1a7a3a; }
+    .epl-zone-rpo { border-left: 4px solid #c8a010; }
+    .epl-zone-rel { border-left: 4px solid #8a1a1a; }
+    .epl-pts { font-weight: 700; color: #1a1a1a; font-size: 14px; }
+    .epl-gd-pos { color: #1a7a3a; font-weight: 700; }
+    .epl-gd-neg { color: #8a1a1a; font-weight: 700; }
+    .epl-team-cell { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .epl-crest { width: 22px; height: 22px; object-fit: contain; flex-shrink: 0; }
+    .epl-form { display: flex; gap: 3px; justify-content: center; align-items: center; }
+    .form-w { width: 11px; height: 11px; border-radius: 50%; background: #1a7a3a; display: inline-block; }
+    .form-d { width: 11px; height: 11px; border-radius: 50%; background: #888; display: inline-block; }
+    .form-l { width: 11px; height: 11px; border-radius: 50%; background: #8a1a1a; display: inline-block; }
+    .epl-legend { display: flex; gap: 16px; padding: 8px 12px; background: #f7f3eb; border-top: 1px solid #e0ddd5; font-family: 'Roboto Condensed', sans-serif; font-size: 10px; color: #666; flex-wrap: wrap; align-items: center; letter-spacing: 0.5px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 0; display: inline-block; flex-shrink: 0; }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .epl-source-link { margin-left: auto; color: #1a4a8a; font-size: 10px; letter-spacing: 1px; text-decoration: none; }
+    .epl-source-link:hover { text-decoration: underline; }
+
     /* ─── LOADING / ERROR STATES ─── */
     .loading-state { padding: 60px 20px; text-align: center; color: #888; font-family: 'Roboto Condensed', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
     .spinner { width: 32px; height: 32px; border: 3px solid #ddd; border-top-color: #1a4a8a; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 14px; }
@@ -186,6 +217,12 @@
 
   <div id="tab-sports" class="tab-panel active">
     <div class="section-header"><h2 class="sports">Sports</h2><div class="section-line sports"></div></div>
+
+    <!-- ── Live EPL Standings ── -->
+    <div class="sub-label" style="margin-top:0">📊 Premier League Standings — Live</div>
+    <div id="epl-table-container"><div class="loading-state" style="padding:24px 20px;"><div class="spinner"></div>Loading EPL standings…</div></div>
+
+    <!-- ── RSS News Feed ── -->
     <div id="content-sports"><div class="loading-state"><div class="spinner"></div>Loading sports news…</div></div>
   </div>
 
@@ -366,6 +403,149 @@ async function fetchFeed(feedUrl, count) {
 }
 
 /* ─────────────────────────────────────────────
+   EPL STANDINGS — ESPN PUBLIC API
+   Fetches live table from site.api.espn.com
+   Cache: 30 minutes (standings don't change often)
+───────────────────────────────────────────── */
+async function fetchEPLStandings(forceRefresh) {
+  const container = document.getElementById('epl-table-container');
+  if (!container) return;
+
+  if (!forceRefresh) {
+    try {
+      const ts = parseInt(localStorage.getItem('saju_epl_ts') || '0');
+      if (Date.now() - ts < 30 * 60 * 1000) {
+        const cached = localStorage.getItem('saju_epl_html');
+        if (cached) { container.innerHTML = cached; return; }
+      }
+    } catch(e) {}
+  }
+
+  container.innerHTML = '<div class="loading-state" style="padding:24px;"><div class="spinner"></div>Loading EPL standings…</div>';
+
+  try {
+    const res = await timedFetch('https://site.api.espn.com/apis/v2/sports/soccer/eng.1/standings', 9000);
+    if (!res.ok) throw new Error(`ESPN API returned HTTP ${res.status}`);
+    const data = await res.json();
+    const html = renderEPLTable(data);
+    container.innerHTML = html;
+    try {
+      localStorage.setItem('saju_epl_html', html);
+      localStorage.setItem('saju_epl_ts', Date.now().toString());
+    } catch(e) {}
+  } catch(err) {
+    container.innerHTML = `<div class="error-state">⚠ Could not load EPL standings — ${err.message}.
+      <a href="#" onclick="fetchEPLStandings(true);return false;">Retry</a> &nbsp;|&nbsp;
+      <a href="https://www.espn.com/soccer/standings/_/league/eng.1" target="_blank">View on ESPN →</a>
+    </div>`;
+  }
+}
+
+function renderEPLTable(data) {
+  /* Navigate ESPN API response tree — handles multiple response shapes */
+  let entries = [];
+  try {
+    if (data.children && data.children[0] && data.children[0].standings)
+      entries = data.children[0].standings.entries || [];
+    if (!entries.length && data.standings && data.standings.entries)
+      entries = data.standings.entries;
+    if (!entries.length && Array.isArray(data.entries))
+      entries = data.entries;
+  } catch(e) {}
+  if (!entries.length) return '<div class="error-state">No standings data in API response.</div>';
+
+  /* Extract a stat value by name — handles ESPN's displayValue or numeric value */
+  const getStat = (stats, ...names) => {
+    for (const n of names) {
+      const s = (stats || []).find(s => s.name === n || s.shortDisplayName === n || s.abbreviation === n);
+      if (s !== undefined) return s.displayValue !== undefined ? s.displayValue : (s.value !== undefined ? s.value : 0);
+    }
+    return 0;
+  };
+
+  /* Zone colours based on final Premier League positions */
+  const getZone = pos => {
+    if (pos <= 4)  return 'epl-zone-cl';
+    if (pos === 5) return 'epl-zone-el';
+    if (pos === 6) return 'epl-zone-ecl';
+    if (pos === 17) return 'epl-zone-rpo';
+    if (pos >= 18) return 'epl-zone-rel';
+    return '';
+  };
+
+  /* Last-5 form dots */
+  const formDots = str => {
+    if (!str) return '—';
+    return [...String(str).replace(/[^WDLwdl]/g,'').slice(-5)].map(c => {
+      const lc = c.toLowerCase();
+      if (lc === 'w') return '<span class="form-w" title="Win"></span>';
+      if (lc === 'd') return '<span class="form-d" title="Draw"></span>';
+      if (lc === 'l') return '<span class="form-l" title="Loss"></span>';
+      return '';
+    }).join('');
+  };
+
+  let rows = '';
+  entries.forEach((entry, idx) => {
+    const team  = entry.team || {};
+    const stats = entry.stats || [];
+    const pos   = parseInt(getStat(stats, 'rank')) || (idx + 1);
+    const gp    = getStat(stats, 'gamesPlayed', 'GP');
+    const w     = getStat(stats, 'wins', 'W');
+    const d     = getStat(stats, 'ties', 'D', 'draws');
+    const l     = getStat(stats, 'losses', 'L');
+    const gf    = getStat(stats, 'pointsFor', 'GF', 'goalsFor');
+    const ga    = getStat(stats, 'pointsAgainst', 'GA', 'goalsAgainst');
+    const gdRaw = getStat(stats, 'pointDifferential', 'GD', 'goalDifference');
+    const pts   = getStat(stats, 'points', 'Pts', 'PTS');
+    const form  = getStat(stats, 'form', 'Form', 'formSummary', 'streak');
+    const logo  = (team.logos && team.logos[0] && team.logos[0].href) || team.logo || '';
+    const name  = team.displayName || team.name || team.location || 'Unknown';
+    const zone  = getZone(pos);
+    const gdNum = parseFloat(gdRaw) || 0;
+    const gdCls = gdNum > 0 ? 'epl-gd-pos' : gdNum < 0 ? 'epl-gd-neg' : '';
+    const gdTxt = gdNum > 0 ? '+' + Math.round(gdNum) : Math.round(gdNum);
+
+    rows += `
+      <tr class="${zone}">
+        <td>${pos}</td>
+        <td><div class="epl-team-cell">
+          ${logo ? `<img class="epl-crest" src="${logo}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
+          <span>${name}</span>
+        </div></td>
+        <td>${gp}</td><td>${w}</td><td>${d}</td><td>${l}</td>
+        <td>${gf}</td><td>${ga}</td>
+        <td class="${gdCls}">${gdTxt}</td>
+        <td class="epl-pts">${pts}</td>
+        <td><div class="epl-form">${formDots(form)}</div></td>
+      </tr>`;
+  });
+
+  return `
+    <div class="epl-table-wrap">
+      <table class="epl-table">
+        <thead><tr>
+          <th>Pos</th><th style="text-align:left">Club</th>
+          <th title="Games Played">GP</th><th title="Wins">W</th>
+          <th title="Draws">D</th><th title="Losses">L</th>
+          <th title="Goals For">GF</th><th title="Goals Against">GA</th>
+          <th title="Goal Difference">GD</th><th title="Points">Pts</th>
+          <th title="Last 5 games">Form</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="epl-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:#1a4a8a;width:12px;height:12px"></span>Champions League (1–4)</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#e8870a;width:12px;height:12px"></span>Europa League (5th)</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#1a7a3a;width:12px;height:12px"></span>Conference League (6th)</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#c8a010;width:12px;height:12px"></span>Relegation play-off (17th)</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#8a1a1a;width:12px;height:12px"></span>Relegation (18–20)</span>
+        <a class="epl-source-link" href="https://www.espn.com/soccer/standings/_/league/eng.1" target="_blank" rel="noopener">Full table on ESPN →</a>
+      </div>
+    </div>`;
+}
+
+/* ─────────────────────────────────────────────
    RENDER ARTICLES INTO NEWSPAPER CARD LAYOUT
    Layout:
      - Items 0-1  → grid-2-1 (lead + sidebar)
@@ -481,6 +661,9 @@ async function loadAllTabs(forceRefresh) {
   const btn = document.getElementById('refresh-btn');
   if (btn) { btn.disabled = true; btn.textContent = '⟳ Fetching…'; }
 
+  /* Load EPL standings alongside the news feeds */
+  fetchEPLStandings(forceRefresh);
+
   const allHeadlines = [];
   for (const tab of TAB_ORDER) {
     try {
@@ -513,6 +696,11 @@ function hardRefresh() {
       localStorage.removeItem('saju_ts_' + t);
     } catch(e) {}
   });
+  /* Also clear EPL standings cache */
+  try {
+    localStorage.removeItem('saju_epl_html');
+    localStorage.removeItem('saju_epl_ts');
+  } catch(e) {}
   loadAllTabs(true);
 }
 
