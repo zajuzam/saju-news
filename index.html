@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Saju News</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Roboto+Condensed:wght@400;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { background: #f0ebe0; font-family: 'Source Serif 4', Georgia, serif; color: #1a1a1a; }
+
+    /* ─── MASTHEAD ─── */
+    .masthead { background: #fff; border-bottom: 4px double #1a1a1a; text-align: center; padding: 18px 20px 10px; }
+    .masthead-top {
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: 'Roboto Condensed', sans-serif; font-size: 11px; color: #555;
+      border-bottom: 1px solid #1a1a1a; padding-bottom: 6px; margin-bottom: 8px;
+    }
+    .masthead-name {
+      font-family: 'UnifrakturMaguntia', cursive; font-size: 78px; line-height: 1;
+      color: #1a1a1a; letter-spacing: 2px; text-shadow: 2px 2px 0 rgba(0,0,0,0.08);
+    }
+    .masthead-tagline { font-family: 'Playfair Display', serif; font-style: italic; font-size: 13px; color: #555; margin-top: 4px; letter-spacing: 1px; }
+    .masthead-bottom {
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: 'Roboto Condensed', sans-serif; font-size: 11px; color: #555;
+      border-top: 1px solid #1a1a1a; margin-top: 8px; padding-top: 6px;
+    }
+    .edition-badge { background: #1a1a1a; color: #fff; font-family: 'Roboto Condensed', sans-serif; font-size: 10px; padding: 2px 8px; letter-spacing: 1px; text-transform: uppercase; }
+
+    /* ─── TAB NAVIGATION ─── */
+    .tab-nav { background: #1a1a1a; display: flex; justify-content: center; overflow-x: auto; flex-wrap: wrap; }
+    .tab-btn {
+      color: #e8e0cc; background: none; border: none; border-right: 1px solid #444;
+      cursor: pointer; font-family: 'Roboto Condensed', sans-serif; font-size: 12px;
+      letter-spacing: 2px; text-transform: uppercase; padding: 10px 22px;
+      transition: background 0.2s, color 0.2s; white-space: nowrap;
+    }
+    .tab-btn:first-child { border-left: 1px solid #444; }
+    .tab-btn:hover  { background: #b5341a; color: #fff; }
+    .tab-btn.active { background: #b5341a; color: #fff; font-weight: 700; }
+    .tab-panel        { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ─── REFRESH STATUS BAR ─── */
+    .refresh-bar {
+      background: #f7f3eb; border-bottom: 1px solid #ddd;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 5px 20px; font-family: 'Roboto Condensed', sans-serif; font-size: 10px; color: #888; letter-spacing: 1px;
+    }
+    .refresh-bar .next-refresh { color: #1a4a8a; font-weight: 700; }
+    .last-updated-bar { color: #888; }
+    .refresh-now-btn {
+      background: #1a1a1a; color: #e8e0cc; border: none; cursor: pointer;
+      font-family: 'Roboto Condensed', sans-serif; font-size: 10px; letter-spacing: 1px;
+      padding: 4px 14px; text-transform: uppercase; transition: background 0.2s;
+    }
+    .refresh-now-btn:hover { background: #b5341a; }
+    .refresh-now-btn:disabled { background: #888; cursor: not-allowed; }
+
+    /* ─── BREAKING TICKER ─── */
+    .ticker-wrap { background: #b5341a; overflow: hidden; white-space: nowrap; padding: 6px 0; border-bottom: 2px solid #8a2510; }
+    .ticker-label { display: inline-block; background: #fff; color: #b5341a; font-family: 'Roboto Condensed', sans-serif; font-weight: 700; font-size: 11px; padding: 1px 10px; margin-right: 16px; letter-spacing: 1px; }
+    .ticker-content { display: inline-block; animation: ticker 60s linear infinite; font-family: 'Roboto Condensed', sans-serif; font-size: 13px; color: #fff; letter-spacing: 0.5px; }
+    @keyframes ticker { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
+
+    /* ─── PAGE LAYOUT ─── */
+    .page { max-width: 1180px; margin: 0 auto; padding: 0 16px 40px; }
+
+    /* ─── SECTION HEADERS ─── */
+    .section-header { display: flex; align-items: center; margin: 28px 0 16px; gap: 12px; }
+    .section-header h2 { font-family: 'Playfair Display', serif; font-size: 11px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: #fff; background: #1a1a1a; padding: 5px 16px; white-space: nowrap; }
+    .section-header h2.sports   { background: #1a4a8a; }
+    .section-header h2.politics { background: #8a1a1a; }
+    .section-header h2.kerala   { background: #1a7a3a; }
+    .section-header h2.atp      { background: #6a3a9a; }
+    .section-header h2.maryland { background: #1a5a7a; }
+    .section-line { flex: 1; height: 2px; background: #1a1a1a; }
+    .section-line.sports   { background: #1a4a8a; }
+    .section-line.politics { background: #8a1a1a; }
+    .section-line.kerala   { background: #1a7a3a; }
+    .section-line.atp      { background: #6a3a9a; }
+    .section-line.maryland { background: #1a5a7a; }
+
+    /* ─── SUBSECTION LABEL ─── */
+    .sub-label { font-family: 'Roboto Condensed', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #888; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin-bottom: 10px; margin-top: 22px; }
+    .sub-label:first-child { margin-top: 0; }
+
+    /* ─── CARD GRIDS ─── */
+    .grid-1   { display: grid; grid-template-columns: 1fr;           gap: 1px; background: #ccc; border: 1px solid #ccc; margin-bottom: 1px; }
+    .grid-2   { display: grid; grid-template-columns: repeat(2,1fr); gap: 1px; background: #ccc; border: 1px solid #ccc; margin-bottom: 1px; }
+    .grid-3   { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: #ccc; border: 1px solid #ccc; margin-bottom: 1px; }
+    .grid-4   { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: #ccc; border: 1px solid #ccc; margin-bottom: 1px; }
+    .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr;       gap: 1px; background: #ccc; border: 1px solid #ccc; margin-bottom: 1px; }
+
+    /* ─── ARTICLE CARDS ─── */
+    .card      { background: #faf7f0; padding: 16px 18px; }
+    .card.lead { background: #fff;    padding: 20px 22px; }
+    .card-kicker { font-family: 'Roboto Condensed', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 6px; }
+    .kicker-sports   { color: #1a4a8a; }
+    .kicker-politics { color: #8a1a1a; }
+    .kicker-kerala   { color: #1a7a3a; }
+    .kicker-atp      { color: #6a3a9a; }
+    .kicker-slam     { color: #9a6a1a; }
+    .kicker-maryland { color: #1a5a7a; }
+    .card-headline { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 16px; line-height: 1.3; margin-bottom: 8px; color: #111; }
+    .card.lead .card-headline { font-size: 22px; line-height: 1.25; }
+    .card-headline a { color: inherit; text-decoration: none; }
+    .card-headline a:hover { text-decoration: underline; }
+    .card-byline { font-family: 'Roboto Condensed', sans-serif; font-size: 10px; color: #999; letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; }
+    .card-body { font-family: 'Source Serif 4', Georgia, serif; font-size: 13px; line-height: 1.7; color: #333; }
+    .card-divider { border: none; border-top: 1px solid #ddd; margin: 10px 0; }
+    .read-more { display: inline-block; margin-top: 8px; font-family: 'Roboto Condensed', sans-serif; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: #1a4a8a; text-decoration: none; }
+    .read-more:hover { text-decoration: underline; }
+
+    /* ─── GRAND SLAM CALENDAR ─── */
+    .slam-card { background: #faf7f0; padding: 16px 18px; }
+    .slam-status-done   { display: inline-block; background: #1a7a3a; color: #fff; font-family: 'Roboto Condensed', sans-serif; font-size: 9px; padding: 2px 8px; letter-spacing: 1px; margin-bottom: 8px; }
+    .slam-status-next   { display: inline-block; background: #6a3a9a; color: #fff; font-family: 'Roboto Condensed', sans-serif; font-size: 9px; padding: 2px 8px; letter-spacing: 1px; margin-bottom: 8px; }
+    .slam-status-future { display: inline-block; background: #888;    color: #fff; font-family: 'Roboto Condensed', sans-serif; font-size: 9px; padding: 2px 8px; letter-spacing: 1px; margin-bottom: 8px; }
+
+    /* ─── LOADING / ERROR STATES ─── */
+    .loading-state { padding: 60px 20px; text-align: center; color: #888; font-family: 'Roboto Condensed', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+    .spinner { width: 32px; height: 32px; border: 3px solid #ddd; border-top-color: #1a4a8a; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 14px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-state { padding: 16px 20px; color: #8a1a1a; font-family: 'Roboto Condensed', sans-serif; font-size: 11px; letter-spacing: 1px; background: #fff4f4; border: 1px solid #f5c6c6; margin: 10px 0; }
+    .error-state a { color: #8a1a1a; }
+
+    /* ─── FOOTER ─── */
+    footer { background: #1a1a1a; color: #aaa; text-align: center; font-family: 'Roboto Condensed', sans-serif; font-size: 11px; padding: 16px; letter-spacing: 1px; margin-top: 30px; }
+    footer a { color: #e8e0cc; text-decoration: none; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 900px) {
+      .grid-3, .grid-4, .grid-2-1 { grid-template-columns: 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .masthead-name { font-size: 52px; }
+      .tab-btn { font-size: 10px; padding: 8px 12px; letter-spacing: 1px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════  MASTHEAD  ════════ -->
+<header class="masthead">
+  <div class="masthead-top">
+    <span>EST. 2026 · DIGITAL EDITION</span>
+    <span class="edition-badge" id="edition-badge">Morning Edition</span>
+    <span>VOL. I · NO. 1</span>
+  </div>
+  <div class="masthead-name">Saju News</div>
+  <div class="masthead-tagline">"Truth, Clarity &amp; Insight — Every Day"</div>
+  <div class="masthead-bottom">
+    <span id="masthead-date">Loading…</span>
+    <span>sports · politics · maryland · atp · kerala</span>
+    <span>zajuzam@outlook.com</span>
+  </div>
+</header>
+
+<!-- ════════  TAB NAVIGATION  ════════ -->
+<nav class="tab-nav">
+  <button class="tab-btn active"  onclick="showTab('sports',   this)">⚽ Sports</button>
+  <button class="tab-btn"         onclick="showTab('politics', this)">🏛 Politics</button>
+  <button class="tab-btn"         onclick="showTab('maryland', this)">🦀 Maryland News</button>
+  <button class="tab-btn"         onclick="showTab('tennis',   this)">🎾 ATP &amp; Grand Slams</button>
+  <button class="tab-btn"         onclick="showTab('kerala',   this)">🌴 Kerala</button>
+</nav>
+
+<!-- ════════  REFRESH STATUS BAR  ════════ -->
+<div class="refresh-bar">
+  <span class="last-updated-bar">LAST UPDATED: <span id="last-updated-time">—</span></span>
+  <span>AUTO-REFRESH AT 5:00 AM EST · <span class="next-refresh" id="countdown">calculating…</span></span>
+  <button class="refresh-now-btn" id="refresh-btn" onclick="hardRefresh()">↻ Fetch Latest News</button>
+</div>
+
+<!-- ════════  BREAKING TICKER  ════════ -->
+<div class="ticker-wrap">
+  <span class="ticker-label">LATEST</span>
+  <span class="ticker-content" id="ticker-text">Fetching live headlines…</span>
+</div>
+
+<!-- ════════  PAGE BODY  ════════ -->
+<div class="page">
+
+  <div id="tab-sports" class="tab-panel active">
+    <div class="section-header"><h2 class="sports">Sports</h2><div class="section-line sports"></div></div>
+    <div id="content-sports"><div class="loading-state"><div class="spinner"></div>Loading sports news…</div></div>
+  </div>
+
+  <div id="tab-politics" class="tab-panel">
+    <div class="section-header"><h2 class="politics">Politics</h2><div class="section-line politics"></div></div>
+    <div id="content-politics"><div class="loading-state"><div class="spinner"></div>Loading politics news…</div></div>
+  </div>
+
+  <div id="tab-maryland" class="tab-panel">
+    <div class="section-header"><h2 class="maryland">Maryland News</h2><div class="section-line maryland"></div></div>
+    <div id="content-maryland"><div class="loading-state"><div class="spinner"></div>Loading Maryland news…</div></div>
+  </div>
+
+  <div id="tab-tennis" class="tab-panel">
+    <div class="section-header"><h2 class="atp">ATP Tour &amp; Grand Slams</h2><div class="section-line atp"></div></div>
+    <!-- Static 2026 Grand Slam Calendar -->
+    <div class="sub-label">🏆 2026 Grand Slam Calendar</div>
+    <div class="grid-4">
+      <div class="slam-card"><span class="slam-status-done">✅ Completed</span><div class="card-headline" style="font-size:15px;">Australian Open</div><div class="card-body">Jan 12–26 · Melbourne<br><br>Alcaraz def. Djokovic to complete Career Grand Slam — youngest ever at 24 yrs, 101 days.</div></div>
+      <div class="slam-card"><span class="slam-status-next">🎾 Next · May 24</span><div class="card-headline" style="font-size:15px;">Roland-Garros</div><div class="card-body">May 24 – Jun 7 · Paris<br><br>Record prize fund of €61.7M announced. Wawrinka's final appearance at the clay major.</div></div>
+      <div class="slam-card"><span class="slam-status-future">📅 Jun 29</span><div class="card-headline" style="font-size:15px;">Wimbledon</div><div class="card-body">Jun 29 – Jul 12 · London<br><br>The Championships return to the All England Club. Alcaraz will look to defend on grass.</div></div>
+      <div class="slam-card"><span class="slam-status-future">📅 Aug 31</span><div class="card-headline" style="font-size:15px;">US Open</div><div class="card-body">Aug 31 – Sep 13 · New York<br><br>Year's final Slam at the USTA Billie Jean King National Tennis Center. Hard-court showdown.</div></div>
+    </div>
+    <!-- Dynamic ATP News -->
+    <div id="content-tennis"><div class="loading-state"><div class="spinner"></div>Loading ATP &amp; tennis news…</div></div>
+  </div>
+
+  <div id="tab-kerala" class="tab-panel">
+    <div class="section-header"><h2 class="kerala">Kerala News</h2><div class="section-line kerala"></div></div>
+    <div id="content-kerala"><div class="loading-state"><div class="spinner"></div>Loading Kerala news…</div></div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- ════════  FOOTER  ════════ -->
+<footer>
+  <div>© 2026 <strong>Saju News</strong> · Digital Edition · Live RSS Edition · All Rights Reserved</div>
+  <div style="margin-top:6px; color:#555;">
+    Live feeds via BBC Sport · NPR · Maryland Matters · The Hindu · Reuters · AP News
+  </div>
+</footer>
+
+<!-- ════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════ -->
+<script>
+/* ─────────────────────────────────────────────
+   RSS FEED CONFIGURATION
+   Each tab can have multiple feeds.
+   kicker: CSS class for the colored tag
+   count:  how many articles to fetch
+───────────────────────────────────────────── */
+const FEEDS = {
+  sports: [
+    { label: '⚽ Premier League & Football',  kicker: 'kicker-sports',   url: 'https://feeds.bbci.co.uk/sport/football/rss.xml',           count: 9 },
+    { label: '🏆 ESPN Soccer',               kicker: 'kicker-sports',   url: 'https://www.espn.com/espn/rss/soccer/news',                  count: 6 }
+  ],
+  politics: [
+    { label: '🇺🇸 NPR Politics',             kicker: 'kicker-politics', url: 'https://feeds.npr.org/1014/rss.xml',                         count: 6 },
+    { label: '🌍 AP Top News',               kicker: 'kicker-politics', url: 'https://feeds.apnews.com/rss/apf-topnews',                   count: 6 },
+    { label: '🇮🇳 The Hindu — National',     kicker: 'kicker-politics', url: 'https://www.thehindu.com/news/national/feeder/default.rss',   count: 5 }
+  ],
+  maryland: [
+    { label: '🦀 Maryland Matters',          kicker: 'kicker-maryland', url: 'https://marylandmatters.org/feed/',                          count: 8 },
+    { label: '🦀 WBAL News',                 kicker: 'kicker-maryland', url: 'https://www.wbal.com/rss',                                   count: 6 }
+  ],
+  tennis: [
+    { label: '🎾 BBC Tennis',                kicker: 'kicker-atp',      url: 'https://feeds.bbci.co.uk/sport/tennis/rss.xml',              count: 9 }
+  ],
+  kerala: [
+    { label: '🌴 The Hindu — Kerala',        kicker: 'kicker-kerala',   url: 'https://www.thehindu.com/news/national/kerala/feeder/default.rss', count: 7 },
+    { label: '🌴 Onmanorama Kerala',         kicker: 'kicker-kerala',   url: 'https://www.onmanorama.com/news/kerala.feed',               count: 6 }
+  ]
+};
+
+const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+const TAB_ORDER = ['sports', 'politics', 'maryland', 'tennis', 'kerala'];
+
+/* ─────────────────────────────────────────────
+   UTILITY FUNCTIONS
+───────────────────────────────────────────── */
+function stripHtml(html) {
+  const d = document.createElement('div');
+  d.innerHTML = html || '';
+  return (d.textContent || d.innerText || '').replace(/\s+/g, ' ').trim();
+}
+function truncate(text, len) {
+  const t = stripHtml(text);
+  return t.length > len ? t.slice(0, len).trim() + '…' : t;
+}
+function fmtDate(str) {
+  try {
+    const d = new Date(str);
+    if (isNaN(d)) return '';
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch(e) { return ''; }
+}
+function safeKicker(item) {
+  if (item.categories && item.categories.length > 0) {
+    const c = typeof item.categories[0] === 'string'
+      ? item.categories[0]
+      : (item.categories[0] && item.categories[0]._ ? item.categories[0]._ : '');
+    if (c && c.length > 0 && c.length < 50) return c;
+  }
+  return 'Latest';
+}
+
+/* ─────────────────────────────────────────────
+   PARSE RSS / ATOM XML IN THE BROWSER
+   Used by proxy fallback strategies
+───────────────────────────────────────────── */
+function parseRSSXML(xmlStr, count) {
+  const doc = new DOMParser().parseFromString(xmlStr, 'text/xml');
+  if (doc.querySelector('parsererror')) throw new Error('Invalid XML from proxy');
+  const getTag = (el, ...tags) => {
+    for (const tag of tags) {
+      const found = el.getElementsByTagName(tag)[0];
+      if (found && (found.textContent || '').trim()) return found.textContent.trim();
+    }
+    return '';
+  };
+  return [...doc.querySelectorAll('item, entry')].slice(0, count).map(el => {
+    const linkEl = el.getElementsByTagName('link')[0];
+    const link   = (linkEl && linkEl.textContent.trim()) || (linkEl && linkEl.getAttribute('href')) || '';
+    return {
+      title:       getTag(el, 'title'),
+      link,
+      description: getTag(el, 'description', 'summary', 'encoded'),
+      pubDate:     getTag(el, 'pubDate', 'published', 'updated', 'date'),
+      author:      getTag(el, 'author', 'creator', 'name'),
+      categories:  [...el.getElementsByTagName('category')].map(c => (c.getAttribute('term') || c.textContent || '').trim()).filter(Boolean)
+    };
+  });
+}
+
+/* ─────────────────────────────────────────────
+   MASTER FETCH — THREE-STRATEGY FALLBACK
+   Works on GitHub Pages (HTTPS) with no server.
+
+   Strategy 1 → rss2json.com  (clean JSON API)
+   Strategy 2 → allorigins.win (raw XML proxy)
+   Strategy 3 → corsproxy.io  (raw XML proxy)
+───────────────────────────────────────────── */
+async function timedFetch(url, ms) {
+  const ctrl = new AbortController();
+  const tid  = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const res = await fetch(url, { signal: ctrl.signal });
+    clearTimeout(tid);
+    return res;
+  } catch(e) { clearTimeout(tid); throw e; }
+}
+
+async function fetchFeed(feedUrl, count) {
+  /* ── Strategy 1: rss2json.com — returns clean JSON, CORS-safe from HTTPS ── */
+  try {
+    const endpoint = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}&count=${count}`;
+    const res  = await timedFetch(endpoint, 8000);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.status === 'ok' && data.items && data.items.length > 0) return data.items;
+    }
+  } catch(e) { /* fall through */ }
+
+  /* ── Strategy 2: allorigins.win — raw XML, parse in browser ── */
+  try {
+    const res = await timedFetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(feedUrl)}`, 9000);
+    if (res.ok) return parseRSSXML(await res.text(), count);
+  } catch(e) { /* fall through */ }
+
+  /* ── Strategy 3: corsproxy.io — raw XML, parse in browser ── */
+  try {
+    const res = await timedFetch(`https://corsproxy.io/?${encodeURIComponent(feedUrl)}`, 9000);
+    if (res.ok) return parseRSSXML(await res.text(), count);
+  } catch(e) { /* fall through */ }
+
+  throw new Error('All three sources failed — check internet connection');
+}
+
+/* ─────────────────────────────────────────────
+   RENDER ARTICLES INTO NEWSPAPER CARD LAYOUT
+   Layout:
+     - Items 0-1  → grid-2-1 (lead + sidebar)
+     - Items 2-4  → grid-3
+     - Items 5-7  → grid-4
+───────────────────────────────────────────── */
+function renderArticles(items, kicker, label) {
+  if (!items || items.length === 0) {
+    return `<div class="error-state">No articles returned from this feed.</div>`;
+  }
+
+  let html = `<div class="sub-label">${label}</div>`;
+
+  // Slot 0 (lead) + slot 1 (sidebar)
+  const a0 = items[0];
+  const a1 = items[1];
+  html += `<div class="${a1 ? 'grid-2-1' : 'grid-1'}">`;
+  html += cardHtml(a0, kicker, true);
+  if (a1) html += cardHtml(a1, kicker, false);
+  html += `</div>`;
+
+  // Slots 2-4 → grid-3
+  const mid = items.slice(2, 5);
+  if (mid.length > 0) {
+    const cls = mid.length === 1 ? 'grid-1' : mid.length === 2 ? 'grid-2' : 'grid-3';
+    html += `<div class="${cls}">`;
+    mid.forEach(a => { html += cardHtml(a, kicker, false); });
+    html += `</div>`;
+  }
+
+  // Slots 5-8 → grid-4
+  const tail = items.slice(5, 9);
+  if (tail.length > 0) {
+    const cls = ['grid-1','grid-2','grid-3','grid-4'][tail.length - 1] || 'grid-4';
+    html += `<div class="${cls}">`;
+    tail.forEach(a => { html += cardHtml(a, kicker, false, true); });
+    html += `</div>`;
+  }
+
+  return html;
+}
+
+function cardHtml(item, kicker, isLead, isBrief) {
+  const title   = item.title   || 'Untitled';
+  const link    = item.link    || '#';
+  const author  = item.author  || 'Staff Reporter';
+  const dateStr = fmtDate(item.pubDate);
+  const byline  = [author, dateStr].filter(Boolean).join(' · ');
+  const raw     = item.description || item.content || '';
+  const body    = isBrief ? truncate(raw, 120) : isLead ? truncate(raw, 380) : truncate(raw, 200);
+  const kickTxt = safeKicker(item);
+
+  return `
+    <div class="card${isLead ? ' lead' : ''}">
+      <div class="card-kicker ${kicker}">${kickTxt}</div>
+      <div class="card-headline"><a href="${link}" target="_blank" rel="noopener">${title}</a></div>
+      <div class="card-byline">${byline}</div>
+      <div class="card-body">${body}</div>
+      ${isLead ? `<a class="read-more" href="${link}" target="_blank" rel="noopener">Read full story →</a>` : ''}
+    </div>`;
+}
+
+/* ─────────────────────────────────────────────
+   LOAD A SINGLE TAB (with caching)
+───────────────────────────────────────────── */
+async function loadTab(tabName, forceRefresh) {
+  const container = document.getElementById('content-' + tabName);
+  if (!container) return;
+
+  // Check cache
+  if (!forceRefresh) {
+    try {
+      const ts = parseInt(localStorage.getItem('saju_ts_' + tabName) || '0');
+      if (Date.now() - ts < CACHE_TTL) {
+        const cached = localStorage.getItem('saju_cache_' + tabName);
+        if (cached) { container.innerHTML = cached; return; }
+      }
+    } catch(e) {}
+  }
+
+  container.innerHTML = `<div class="loading-state"><div class="spinner"></div>Fetching live news…</div>`;
+
+  const feeds = FEEDS[tabName] || [];
+  let combined = '';
+  const allItems = [];
+
+  for (const feed of feeds) {
+    try {
+      const items = await fetchFeed(feed.url, feed.count);
+      combined += renderArticles(items, feed.kicker, feed.label);
+      allItems.push(...items.slice(0, 3));
+    } catch(err) {
+      combined += `<div class="error-state">⚠ Could not load <strong>${feed.label}</strong> — ${err.message || 'network error'}. <a href="#" onclick="loadTab('${tabName}',true);return false;">Retry</a></div>`;
+    }
+  }
+
+  if (!combined) combined = `<div class="error-state">No content loaded. Check your internet connection.</div>`;
+  container.innerHTML = combined;
+
+  // Cache result
+  try {
+    localStorage.setItem('saju_cache_' + tabName, combined);
+    localStorage.setItem('saju_ts_' + tabName, Date.now().toString());
+  } catch(e) {}
+
+  return allItems;
+}
+
+/* ─────────────────────────────────────────────
+   LOAD ALL TABS + UPDATE TICKER
+───────────────────────────────────────────── */
+async function loadAllTabs(forceRefresh) {
+  const btn = document.getElementById('refresh-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⟳ Fetching…'; }
+
+  const allHeadlines = [];
+  for (const tab of TAB_ORDER) {
+    try {
+      const items = await loadTab(tab, forceRefresh);
+      if (items) items.forEach(i => { if (i.title) allHeadlines.push(i.title); });
+    } catch(e) {}
+  }
+
+  // Update ticker with live headlines
+  if (allHeadlines.length > 0) {
+    document.getElementById('ticker-text').textContent =
+      allHeadlines.map(h => h.replace(/\s+/g,' ').trim()).join('  ●  ');
+  }
+
+  // Update "last updated" timestamp
+  const now = new Date();
+  document.getElementById('last-updated-time').textContent =
+    now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York' }) + ' ET';
+
+  if (btn) { btn.disabled = false; btn.textContent = '↻ Fetch Latest News'; }
+}
+
+/* ─────────────────────────────────────────────
+   HARD REFRESH — clears cache, re-fetches
+───────────────────────────────────────────── */
+function hardRefresh() {
+  TAB_ORDER.forEach(t => {
+    try {
+      localStorage.removeItem('saju_cache_' + t);
+      localStorage.removeItem('saju_ts_' + t);
+    } catch(e) {}
+  });
+  loadAllTabs(true);
+}
+
+/* ─────────────────────────────────────────────
+   TAB SWITCHING
+───────────────────────────────────────────── */
+function showTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+  try { localStorage.setItem('saju_active_tab', name); } catch(e) {}
+}
+
+/* ─────────────────────────────────────────────
+   DYNAMIC MASTHEAD DATE
+───────────────────────────────────────────── */
+(function() {
+  const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const now    = new Date();
+  const estStr = now.toLocaleString('en-US', { timeZone: 'America/New_York' });
+  const est    = new Date(estStr);
+  document.getElementById('masthead-date').textContent =
+    days[est.getDay()] + ', ' + months[est.getMonth()] + ' ' + est.getDate() + ', ' + est.getFullYear();
+  const hr = est.getHours();
+  document.getElementById('edition-badge').textContent =
+    hr >= 5 && hr < 12 ? 'Morning Edition' :
+    hr >= 12 && hr < 17 ? 'Afternoon Edition' :
+    hr >= 17 && hr < 21 ? 'Evening Edition' : 'Late-Night Edition';
+})();
+
+/* ─────────────────────────────────────────────
+   5 AM EST AUTO-REFRESH COUNTDOWN
+───────────────────────────────────────────── */
+(function() {
+  const cdEl = document.getElementById('countdown');
+
+  function msUntilNext5AM() {
+    const now    = new Date();
+    const estNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+    const target = new Date(estNow);
+    target.setHours(5, 0, 0, 0);
+    if (estNow >= target) target.setDate(target.getDate() + 1);
+    return (target - estNow);
+  }
+
+  function fmt(ms) {
+    const s = Math.max(0, Math.floor(ms / 1000));
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sc = s % 60;
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`;
+  }
+
+  function tick() {
+    const ms = msUntilNext5AM();
+    if (ms <= 1000) { hardRefresh(); return; }
+    if (cdEl) cdEl.textContent = fmt(ms) + ' away';
+    setTimeout(tick, 1000);
+  }
+
+  // Hard reload at 5 AM
+  setTimeout(() => hardRefresh(), msUntilNext5AM());
+  tick();
+})();
+
+/* ─────────────────────────────────────────────
+   RESTORE LAST ACTIVE TAB
+───────────────────────────────────────────── */
+(function() {
+  try {
+    const last = localStorage.getItem('saju_active_tab');
+    const idx  = TAB_ORDER.indexOf(last);
+    if (idx !== -1) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + last).classList.add('active');
+      document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+    }
+  } catch(e) {}
+})();
+
+/* ─────────────────────────────────────────────
+   KICK OFF ON PAGE LOAD
+───────────────────────────────────────────── */
+loadAllTabs(false);
+</script>
+
+</body>
+</html>
