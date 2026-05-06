@@ -277,19 +277,18 @@
 ───────────────────────────────────────────── */
 const FEEDS = {
   sports: [
-    { label: '⚽ Premier League ',  kicker: 'kicker-sports',   url: 'https://www.premierleague.com/news/rss.xml',           count: 9 },
+    { label: '⚽ Premier League Soccer',  kicker: 'kicker-sports',   url: 'https://www.premierleague.com/news/rss.xml',           count: 9 },
     { label: '🏆 BBC Soccer',               kicker: 'kicker-sports',   url: 'https://feeds.bbci.co.uk/sport/football/rss.xml',                  count: 6 }
-
-    // { label: '⚽ Premier League & Football',  kicker: 'kicker-sports',   url: 'https://feeds.bbci.co.uk/sport/football/rss.xml',           count: 9 },
-    // { label: '🏆 BBC Soccer',               kicker: 'kicker-sports',   url: 'https://feeds.bbci.co.uk/sport/football/rss.xml',                  count: 6 }
   ],
   politics: [
-    { label: '🇺🇸 NPR Politics',             kicker: 'kicker-politics', url: 'https://feeds.npr.org/1014/rss.xml',                         count: 6 },
+    { label: 'US NPR Politics',             kicker: 'kicker-politics', url: 'https://feeds.npr.org/1014/rss.xml',                         count: 6 },
     { label: '🌍 ABC News Top Stories',      kicker: 'kicker-politics', url: 'https://feeds.abcnews.com/abcnews/topstories',               count: 6 },
     { label: '🇮🇳 The Hindu — National',     kicker: 'kicker-politics', url: 'https://www.thehindu.com/news/national/feeder/default.rss',   count: 5 }
   ],
   maryland: [
-    { label: '🦀 Maryland Reporter',         kicker: 'kicker-maryland', url: 'https://marylandreporter.com/feed/',                      count: 8 },
+    //https://news.google.com/rss/search?q=baltimore+sun
+   // { label: '🦀 Maryland Reporter',         kicker: 'kicker-maryland', url: 'https://marylandreporter.com/feed/',                      count: 8 },
+    { label: '🦀 Maryland Reporter',         kicker: 'kicker-maryland', url: 'https://news.google.com/rss/search?q=baltimore+sun',                      count: 8 },
     { label: '🦀 WBAL News',                 kicker: 'kicker-maryland', url: 'https://www.wbal.com/rss',                                   count: 6 }
   ],
   tennis: [
